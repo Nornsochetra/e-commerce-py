@@ -80,18 +80,28 @@ def _register_error_pages(app: Flask) -> None:
 
 
 def init_database(app: Flask, seed: bool = True) -> None:
-    """Create tables, the first admin account, and sample products when the shop is empty."""
+    """Create tables, the admin account, and sample products when the shop is empty.
+
+    ADMIN_USERNAME / ADMIN_PASSWORD are the source of truth: changing them (e.g. in the Render dashboard)
+    and restarting updates the admin login.
+    """
     from .seed import seed_products, upgrade_schema
 
     with app.app_context():
         db.create_all()
         upgrade_schema()
-        if not AdminUser.query.first():
-            admin = AdminUser(username=app.config["ADMIN_USERNAME"])
-            admin.set_password(app.config["ADMIN_PASSWORD"])
+        username, password = app.config["ADMIN_USERNAME"], app.config["ADMIN_PASSWORD"]
+        admin = AdminUser.query.filter_by(username=username).first()
+        if admin is None:
+            admin = AdminUser(username=username)
+            admin.set_password(password)
             db.session.add(admin)
             db.session.commit()
-            app.logger.info("Created admin account '%s'", admin.username)
+            app.logger.info("Created admin account '%s'", username)
+        elif not admin.check_password(password):
+            admin.set_password(password)
+            db.session.commit()
+            app.logger.info("Updated the password of admin '%s' from ADMIN_PASSWORD", username)
         if seed:
             seed_products()
 

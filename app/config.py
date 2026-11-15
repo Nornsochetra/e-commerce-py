@@ -44,8 +44,9 @@ def load_config() -> dict:
         "SESSION_COOKIE_SECURE": os.environ.get("SESSION_COOKIE_SECURE", "").lower() in ("1", "true"),
         "CSRF_ENABLED": True,
         "SHOP_NAME": os.environ.get("SHOP_NAME", "Setec Shop"),
-        "ADMIN_USERNAME": os.environ.get("ADMIN_USERNAME", "admin"),
-        "ADMIN_PASSWORD": os.environ.get("ADMIN_PASSWORD", "admin123"),
+        "ADMIN_USERNAME": os.environ.get("ADMIN_USERNAME", "").strip() or "admin",
+        # Stray spaces/new lines (easy to add in a hosting dashboard) are not part of the password.
+        "ADMIN_PASSWORD": os.environ.get("ADMIN_PASSWORD", "").strip() or "admin123",
         # KHQR / Bakong
         "BAKONG_ACCOUNT_ID": os.environ.get("BAKONG_ACCOUNT_ID", "yourname@aclb"),
         # Needed for banks that share one Bakong ID (ABA: abaakhppxxx@abaa + your account number).

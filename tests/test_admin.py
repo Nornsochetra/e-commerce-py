@@ -218,3 +218,18 @@ def test_upgrade_adds_new_columns_to_old_database(tmp_path):
     with app.app_context():
         product = db.session.get(Product, 1)
         assert product.category.name == "Pantry"
+
+
+def test_admin_password_follows_environment(tmp_path):
+    """Changing ADMIN_PASSWORD (e.g. on Render) and restarting updates the login; stray spaces are ignored."""
+    from app import create_app, init_database
+    from app.models import AdminUser
+
+    uri = f"sqlite:///{tmp_path / 'pw.db'}"
+    for password in ("first-pass", "  new-pass\n"):
+        app = create_app({"TESTING": True, "SQLALCHEMY_DATABASE_URI": uri, "SECRET_KEY": "t"})
+        app.config["ADMIN_PASSWORD"] = password.strip()  # what load_config produces
+        init_database(app, seed=False)
+    with app.app_context():
+        admin = AdminUser.query.one()
+        assert admin.check_password("new-pass") and not admin.check_password("first-pass")
