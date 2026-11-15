@@ -1,0 +1,63 @@
+{% extends "admin/base.html" %}
+{% from "macros.html" import icon, order_status %}
+{% block admin_title %}{{ order.number }}{% endblock %}
+{% block content %}
+  <nav class="breadcrumb"><a href="{{ url_for('admin.orders') }}">Orders</a> / {{ order.number }}</nav>
+  <div class="page-head">
+    <div>
+      <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap"><h1>Order {{ order.number }}</h1>{{ order_status(order) }}</div>
+      <p>Placed {{ order.created_at|localtime }}</p>
+    </div>
+    {% if order.is_pending %}
+    <form method="post" action="{{ url_for('admin.order_mark_paid', order_id=order.id) }}" data-confirm="Mark {{ order.number }} as paid? Only do this after you've seen {{ order.total|money }} arrive in your bank account.">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <button class="btn btn-primary" type="submit">{{ icon('check') }} Mark as paid</button>
+    </form>
+    {% endif %}
+  </div>
+
+  <div class="two-col">
+    <section class="card">
+      <div class="card-head"><h2>Purchased items</h2><span class="muted small">{{ order.item_count }} item{{ '' if order.item_count == 1 else 's' }}</span></div>
+      <div class="table-wrap" style="margin-top:8px">
+        <table class="table">
+          <thead><tr><th>Item</th><th class="right">Unit price</th><th class="right">Quantity</th><th class="right">Subtotal</th></tr></thead>
+          <tbody>
+            {% for item in order.items %}
+            <tr>
+              <td>
+                <div class="prod">
+                  <img class="thumb" src="{{ item.product.image_url() if item.product else url_for('static', filename='img/placeholder.svg') }}" alt="">
+                  {% if item.product_id %}<a href="{{ url_for('admin.product_edit', product_id=item.product_id) }}">{{ item.product_name }}</a>
+                  {% else %}<span>{{ item.product_name }} <span class="muted small">(deleted)</span></span>{% endif %}
+                </div>
+              </td>
+              <td class="right">{{ item.unit_price|money }}</td>
+              <td class="right">{{ item.quantity }}</td>
+              <td class="right">{{ item.subtotal|money }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+          <tfoot><tr><td colspan="3">Total amount</td><td class="right">{{ order.total|money }}</td></tr></tfoot>
+        </table>
+      </div>
+    </section>
+
+    <aside class="card card-body">
+      <h2>Customer</h2>
+      <dl class="detail-grid" style="grid-template-columns:1fr">
+        <div><dt>Name</dt><dd>{{ order.customer_name }}</dd></div>
+        <div><dt>Phone</dt><dd><a href="tel:{{ order.phone }}">{{ order.phone }}</a></dd></div>
+        <div><dt>Email</dt><dd><a href="mailto:{{ order.email }}">{{ order.email }}</a></dd></div>
+        <div><dt>Shipping address</dt><dd>{{ order.shipping_address }}</dd></div>
+      </dl>
+      <h2 style="margin-top:24px">Payment</h2>
+      <dl class="detail-grid" style="grid-template-columns:1fr">
+        <div><dt>Method</dt><dd>KHQR (Bakong)</dd></div>
+        {% if order.paid_at %}<div><dt>Paid at</dt><dd>{{ order.paid_at|localtime }}</dd></div>{% endif %}
+        {% if order.payment_ref %}<div><dt>Reference</dt><dd class="small" style="word-break:break-all">{{ order.payment_ref }}</dd></div>{% endif %}
+        {% if order.khqr_md5 %}<div><dt>KHQR MD5</dt><dd class="small" style="word-break:break-all">{{ order.khqr_md5 }}</dd></div>{% endif %}
+      </dl>
+    </aside>
+  </div>
+{% endblock %}

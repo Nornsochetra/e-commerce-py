@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+{% from "macros.html" import icon, product_card %}
+{% block title %}{{ shop_name }} — Shop local, pay with KHQR{% endblock %}
+
+{% block content %}
+  <section class="hero" data-slider aria-roledescription="carousel" aria-label="Highlights">
+    <div class="slides">
+      <div class="slide active" aria-roledescription="slide">
+        <div>
+          <span class="kicker">{{ icon('leaf') }} Made in Cambodia</span>
+          <h1>Shop Local, <span>Live Better</span></h1>
+          <p>Discover pepper, honey, silk and more from Cambodian makers — delivered to your door.</p>
+          <a class="btn btn-primary btn-lg" href="{{ url_for('shop.shop') }}">Shop now {{ icon('arrow-right') }}</a>
+        </div>
+        {% if hero_product %}
+        <div class="slide-art">
+          <span class="blob"></span>
+          <img src="{{ hero_product.image_url() }}" alt="{{ hero_product.name }}">
+          <span class="price-tag">{{ hero_product.price|money }}</span>
+        </div>
+        {% endif %}
+      </div>
+
+      {% if deal_product %}
+      <div class="slide" aria-roledescription="slide">
+        <div>
+          <span class="kicker">{{ icon('trend') }} Deal of the week</span>
+          <h1>Save {{ deal_product.discount_percent }}% <span>{{ deal_product.name }}</span></h1>
+          <p>{{ deal_product.description|truncate(110) }}</p>
+          <a class="btn btn-primary btn-lg" href="{{ url_for('shop.product_detail', product_id=deal_product.id) }}">View deal {{ icon('arrow-right') }}</a>
+        </div>
+        <div class="slide-art">
+          <span class="blob"></span>
+          <img src="{{ deal_product.image_url() }}" alt="{{ deal_product.name }}">
+          <span class="price-tag">{{ deal_product.price|money }}<s>{{ deal_product.compare_price|money }}</s></span>
+        </div>
+      </div>
+      {% endif %}
+
+      <div class="slide" aria-roledescription="slide">
+        <div>
+          <span class="kicker">{{ icon('qr') }} Fast checkout</span>
+          <h1>Scan &amp; Pay <span>with KHQR</span></h1>
+          <p>No account, no card. Pay in seconds with ABA, ACLEDA, Wing, Bakong or any KHQR banking app.</p>
+          <a class="btn btn-primary btn-lg" href="{{ url_for('shop.shop') }}">Start shopping {{ icon('arrow-right') }}</a>
+        </div>
+        <div class="slide-art">
+          <span class="blob"></span>
+          <div class="mini-khqr" aria-hidden="true"><div class="top">KHQR</div><div class="amt"><small>{{ shop_name }}</small>$12.50</div><div class="qr"></div></div>
+        </div>
+      </div>
+    </div>
+    <button class="slider-arrow prev" type="button" data-prev aria-label="Previous slide">{{ icon('chevron-left') }}</button>
+    <button class="slider-arrow next" type="button" data-next aria-label="Next slide">{{ icon('chevron-right') }}</button>
+    <div class="slider-dots" data-dots></div>
+  </section>
+
+  <section class="features" id="features">
+    <div class="feature"><span class="ic">{{ icon('truck') }}</span><div><strong>Free delivery</strong><span>On every order</span></div></div>
+    <div class="feature"><span class="ic">{{ icon('shield') }}</span><div><strong>Secure payment</strong><span>KHQR via Bakong</span></div></div>
+    <div class="feature"><span class="ic">{{ icon('leaf') }}</span><div><strong>Local makers</strong><span>Made in Cambodia</span></div></div>
+    <div class="feature"><span class="ic">{{ icon('headset') }}</span><div><strong>Friendly support</strong><span>We reply on Telegram</span></div></div>
+  </section>
+
+  {% if categories %}
+  <div class="section-head">
+    <h2>Popular categories</h2>
+    <a class="link-more" href="{{ url_for('shop.shop') }}">View all {{ icon('arrow-right') }}</a>
+  </div>
+  <div class="category-grid">
+    {% for tile in categories %}
+    <a class="category-tile" href="{{ url_for('shop.shop', category=tile.category.id) }}">
+      <div class="pic"><img src="{{ tile.cover.image_url() }}" alt="" loading="lazy"></div>
+      <div class="label"><strong>{{ tile.category.name }}</strong><span>{{ tile.count }} product{{ '' if tile.count == 1 else 's' }}</span></div>
+    </a>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <div class="section-head">
+    <h2>Best selling products</h2>
+    <a class="link-more" href="{{ url_for('shop.shop') }}">View all {{ icon('arrow-right') }}</a>
+  </div>
+  {% if best_sellers %}
+  <div class="product-grid">
+    {% for product in best_sellers %}{{ product_card(product) }}{% endfor %}
+  </div>
+  {% else %}
+  <div class="card empty"><div class="icon">🛍️</div><h2>No products yet</h2><p class="muted">Check back soon — new products are on the way.</p></div>
+  {% endif %}
+
+  <section class="promo">
+    <div class="text">
+      {{ icon('leaf', 'leaf') }}
+      <div>
+        <h2>Support local makers</h2>
+        <p>Every order helps small Cambodian producers grow their business.</p>
+      </div>
+    </div>
+    <a class="btn btn-primary" href="{{ url_for('shop.shop') }}">Explore the shop {{ icon('arrow-right') }}</a>
+  </section>
+{% endblock %}

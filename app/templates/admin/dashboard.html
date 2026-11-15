@@ -1,0 +1,145 @@
+{% extends "admin/base.html" %}
+{% from "macros.html" import icon, delta, order_status %}
+{% block admin_title %}Dashboard{% endblock %}
+{% block content %}
+  <div class="page-head">
+    <div>
+      <h1>Dashboard</h1>
+      <p>Welcome back, {{ session.admin_name }}! Here's what's happening in your store.</p>
+    </div>
+    <nav class="range-select" aria-label="Date range">
+      {% for d, label in ranges.items() %}<a href="{{ url_for('admin.dashboard', days=d) }}" class="{{ 'active' if d == days }}">{{ label }}</a>{% endfor %}
+    </nav>
+  </div>
+
+  <div class="kpis">
+    {% for k in kpis %}
+    <div class="card kpi">
+      <div class="ic {{ k.tone }}">{{ icon(k.icon) }}</div>
+      <div class="label">{{ k.label }}</div>
+      <div class="value">{{ k.value|money if k.money else '{:,}'.format(k.value) }}</div>
+      {{ delta(k.change) }}
+    </div>
+    {% endfor %}
+  </div>
+
+  <div class="dash-grid">
+    <section class="card">
+      <div class="card-head">
+        <h2>Sales overview</h2>
+        <div class="legend"><span><i style="background:var(--brand)"></i>This period</span><span><i style="background:#b8c2bb"></i>Previous period</span></div>
+      </div>
+      <div class="chart" data-line-chart aria-label="Daily paid sales, {{ ranges[days]|lower }}, compared with the previous period"></div>
+      <script type="application/json" data-chart-data>{{ chart|tojson }}</script>
+      <table class="sr-only">
+        <caption>Daily paid sales</caption>
+        <thead><tr><th>Day</th><th>This period</th><th>Previous period</th></tr></thead>
+        <tbody>{% for i in range(chart.labels|length) %}<tr><td>{{ chart.labels[i] }}</td><td>{{ chart.current[i]|money }}</td><td>{{ chart.previous[i]|money }}</td></tr>{% endfor %}</tbody>
+      </table>
+    </section>
+
+    <section class="card">
+      <div class="card-head"><h2>Top products</h2><a class="link-more" href="{{ url_for('admin.products') }}">View all {{ icon('arrow-right') }}</a></div>
+      {% if top_products %}
+      <ol class="rank-list">
+        {% for p in top_products %}
+        <li>
+          <span class="n">{{ loop.index }}</span>
+          {% if p.product %}<img src="{{ p.product.image_url() }}" alt="">{% else %}<img src="{{ url_for('static', filename='img/placeholder.svg') }}" alt="">{% endif %}
+          <div class="grow"><strong>{{ p.name }}</strong><span>{{ p.sold }} sold</span></div>
+          <span class="amt">{{ p.revenue|money }}</span>
+        </li>
+        {% endfor %}
+      </ol>
+      {% else %}
+      <div class="empty-note">No paid orders in this period yet.</div>
+      {% endif %}
+    </section>
+  </div>
+
+  <div class="dash-grid">
+    <section class="card">
+      <div class="card-head"><h2>Recent orders</h2><a class="link-more" href="{{ url_for('admin.orders') }}">View all {{ icon('arrow-right') }}</a></div>
+      {% if recent %}
+      <div class="table-wrap" style="margin-top:8px">
+        <table class="table">
+          <thead><tr><th>Order ID</th><th>Customer</th><th class="right">Total</th><th>Status</th><th>Date</th></tr></thead>
+          <tbody>
+            {% for o in recent %}
+            <tr>
+              <td><a class="id" href="{{ url_for('admin.order_detail', order_id=o.id) }}">{{ o.number }}</a></td>
+              <td>{{ o.customer_name }}</td>
+              <td class="right nowrap">{{ o.total|money }}</td>
+              <td>{{ order_status(o) }}</td>
+              <td class="nowrap muted">{{ o.created_at|localtime('%d %b %Y') }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div class="empty-note">No orders yet. They'll appear here as soon as customers check out.</div>
+      {% endif %}
+    </section>
+
+    <section class="card">
+      <div class="card-head"><h2>Quick actions</h2></div>
+      <div class="quick">
+        <a href="{{ url_for('admin.product_new') }}"><span class="ic">{{ icon('plus') }}</span>Add product<span class="go">{{ icon('chevron-right') }}</span></a>
+        <a href="{{ url_for('admin.orders') }}"><span class="ic">{{ icon('cart') }}</span>Manage orders<span class="go">{{ icon('chevron-right') }}</span></a>
+        <a href="{{ url_for('admin.customers') }}"><span class="ic">{{ icon('users') }}</span>View customers<span class="go">{{ icon('chevron-right') }}</span></a>
+        <a href="{{ url_for('admin.categories') }}"><span class="ic">{{ icon('grid') }}</span>Manage categories<span class="go">{{ icon('chevron-right') }}</span></a>
+      </div>
+    </section>
+  </div>
+
+  <div class="dash-grid-2">
+    <section class="card">
+      <div class="card-head"><h2>Sales by category</h2><span class="muted small">{{ ranges[days] }}</span></div>
+      {% if categories %}
+      <ul class="meter-list">
+        {% for c in categories %}
+        <li class="meter-row">
+          <span class="name">{{ c.name }}</span>
+          <span class="meter" role="img" aria-label="{{ '%.0f'|format(c.share) }}%"><i style="width:{{ '%.1f'|format(c.share) }}%"></i></span>
+          <span class="fig"><b>{{ c.revenue|money }}</b><span>{{ '%.0f'|format(c.share) }}%</span></span>
+        </li>
+        {% endfor %}
+      </ul>
+      {% else %}
+      <div class="empty-note">No paid orders in this period yet.</div>
+      {% endif %}
+      {% if low_stock %}
+      <div class="card-head" style="padding-top:4px"><h3>Low stock</h3><a class="link-more" href="{{ url_for('admin.products') }}">Restock {{ icon('arrow-right') }}</a></div>
+      <ul class="meter-list" style="gap:8px">
+        {% for p in low_stock %}
+        <li class="meter-row" style="grid-template-columns:minmax(0,1fr) auto">
+          <a class="name" href="{{ url_for('admin.product_edit', product_id=p.id) }}" style="color:var(--text)">{{ p.name }}</a>
+          <span class="fig {{ 'stock-low' if p.stock == 0 }}">{{ 'Out of stock' if p.stock == 0 else p.stock ~ ' left' }}</span>
+        </li>
+        {% endfor %}
+      </ul>
+      {% endif %}
+    </section>
+
+    <section class="promo-card">
+      <div class="art"><div class="mini-khqr" aria-hidden="true"><div class="top">KHQR</div><div class="qr"></div></div></div>
+      <div>
+        <h3>KHQR payments</h3>
+        {% if cfg.PAYMENT_MODE == 'bakong' %}
+        <p>Live: the shop checks Bakong every few seconds and confirms paid orders automatically.</p>
+        {% else %}
+        <p>Demo mode: customers see a real KHQR, and orders are confirmed with “Simulate payment” or “Mark as paid”.</p>
+        {% endif %}
+        <dl>
+          <dt>Mode</dt><dd>{{ 'Bakong (automatic)' if cfg.PAYMENT_MODE == 'bakong' else 'Demo' }}</dd>
+          <dt>Account</dt><dd>{{ cfg.BAKONG_ACCOUNT_ID }}{% if cfg.BAKONG_ACQUIRING_BANK %} · {{ cfg.BAKONG_ACQUIRING_BANK }}{% endif %}</dd>
+          <dt>QR valid for</dt><dd>{{ cfg.PAYMENT_TIMEOUT_MINUTES }} minutes</dd>
+        </dl>
+      </div>
+      <div><a class="btn btn-primary btn-sm" href="{{ url_for('admin.orders', status='pending') }}">Orders awaiting payment {{ icon('arrow-right') }}</a></div>
+    </section>
+  </div>
+{% endblock %}
+
+{% block scripts %}<script src="{{ url_for('static', filename='js/chart.js') }}"></script>{% endblock %}

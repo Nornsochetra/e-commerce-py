@@ -1,0 +1,46 @@
+# Render Blueprint: New + → Blueprint → pick this repository.
+# Creates the web service and a free PostgreSQL database, wired together.
+services:
+  - type: web
+    name: setec-shop
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    # init-db is safe to run on every start: it only creates what is missing.
+    startCommand: flask --app wsgi init-db && gunicorn wsgi:app --workers 2 --bind 0.0.0.0:$PORT
+    healthCheckPath: /
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.8
+      - key: DATABASE_URL
+        fromDatabase:
+          name: setec-shop-db
+          property: connectionString
+      - key: SECRET_KEY
+        generateValue: true
+      - key: SESSION_COOKIE_SECURE
+        value: "true"
+      - key: SHOP_NAME
+        value: Setec Shop
+      - key: ADMIN_USERNAME
+        value: admin
+      - key: ADMIN_PASSWORD
+        sync: false   # you type it in the Render dashboard
+      - key: BAKONG_ACCOUNT_ID
+        sync: false   # e.g. yourname@aclb, or abaakhppxxx@abaa for ABA
+      - key: BAKONG_ACCOUNT_INFO
+        sync: false   # ABA only: your account number; leave empty for other banks
+      - key: BAKONG_ACQUIRING_BANK
+        sync: false   # ABA only: e.g. ABA Bank
+      - key: MERCHANT_NAME
+        value: Setec Shop
+      - key: MERCHANT_CITY
+        value: Phnom Penh
+      - key: BAKONG_KHQR_TEMPLATE
+        sync: false
+      - key: BAKONG_TOKEN
+        sync: false   # optional: leave empty for demo mode
+
+databases:
+  - name: setec-shop-db
+    plan: free

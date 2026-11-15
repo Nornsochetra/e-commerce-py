@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+{% from "macros.html" import order_status %}
+{% block title %}Pay with KHQR · {{ order.number }} · {{ shop_name }}{% endblock %}
+
+{% block content %}
+  <div class="pay-layout">
+    <div>
+      <div class="khqr-card">
+        <div class="khqr-head"><span class="khqr-logo">KHQR</span></div>
+        <div class="khqr-merchant">
+          <div class="name">{{ config.MERCHANT_NAME }}</div>
+          <div class="amount">{{ '%.2f'|format(order.total) }}<small>{{ order.currency }}</small></div>
+        </div>
+        <div class="khqr-divider"></div>
+        {% if qr_image %}
+        <div class="khqr-qr">
+          <img src="{{ qr_image }}" alt="KHQR code for {{ order.total|money }}">
+          <span class="center-mark" aria-hidden="true">$</span>
+        </div>
+        {% else %}
+        <div class="khqr-expired">
+          <div style="font-size:2.2rem">⌛</div>
+          <strong>This KHQR code is no longer valid.</strong>
+        </div>
+        {% endif %}
+      </div>
+
+      {% if order.is_pending %}
+      <div class="pay-status" data-pay-status><span class="spinner"></span><span data-pay-text>Waiting for payment…</span></div>
+      <div class="muted small" style="text-align:center">Code expires in <strong class="countdown" data-countdown="{{ seconds_left }}">--:--</strong></div>
+      {% endif %}
+    </div>
+
+    <div class="card card-body">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">
+        <h1 style="margin:0">Scan to pay</h1>
+        {{ order_status(order) }}
+      </div>
+      <p class="muted">Order <span class="order-id">{{ order.number }}</span></p>
+
+      {% if warning %}<div class="alert alert-warning" data-warning>{{ warning }}</div>{% else %}<div class="alert alert-warning" data-warning hidden></div>{% endif %}
+
+      {% if order.is_pending %}
+        <ol class="steps">
+          <li>Open ABA Mobile, ACLEDA, Wing, Bakong or any app that supports <strong>KHQR</strong>.</li>
+          <li>Tap <strong>Scan QR</strong> and point your camera at the code.</li>
+          <li>Check the amount <strong>{{ order.total|money }}</strong> and confirm.</li>
+        </ol>
+        <p class="muted small">This page updates by itself as soon as your payment arrives. Please keep it open.</p>
+
+        {% if payment_mode == 'demo' %}
+        <div class="demo-box">
+          <strong>Demo mode.</strong> Automatic payment detection isn't configured on this server (no Bakong API token),
+          so you can simulate a successful payment.
+          <form method="post" action="{{ url_for('shop.simulate_payment', token=order.token) }}" style="margin-top:10px">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button class="btn btn-primary btn-sm" type="submit">Simulate successful payment</button>
+          </form>
+        </div>
+        {% endif %}
+
+        <form method="post" action="{{ url_for('shop.cancel_order', token=order.token) }}" data-confirm="Cancel this order? Your cart will be kept.">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button class="btn btn-ghost btn-sm" type="submit">Cancel order</button>
+        </form>
+      {% else %}
+        <div class="alert alert-danger">
+          {% if order.status == 'expired' %}This payment code expired before we received a payment.{% else %}This order was cancelled.{% endif %}
+          Your cart is still saved — you can check out again.
+        </div>
+        <a class="btn btn-primary" href="{{ url_for('shop.cart_view') }}">Back to cart</a>
+      {% endif %}
+
+      <h3 style="margin-top:24px">Order summary</h3>
+      {% for item in order.items %}
+      <div class="summary-row"><span>{{ item.quantity }} × {{ item.product_name }}</span><span>{{ item.subtotal|money }}</span></div>
+      {% endfor %}
+      <div class="summary-row summary-total"><span>Total</span><span>{{ order.total|money }}</span></div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block scripts %}
+{% if order.is_pending %}
+<script>
+  window.startPaymentWatch({{ url_for('shop.payment_status', token=order.token)|tojson }}, {{ url_for('shop.payment', token=order.token)|tojson }});
+</script>
+{% endif %}
+{% endblock %}

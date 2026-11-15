@@ -1,0 +1,22 @@
+{% extends "admin/base.html" %}
+{% from "macros.html" import icon %}
+{% block admin_title %}{{ 'Edit category' if category else 'New category' }}{% endblock %}
+{% block content %}
+  <nav class="breadcrumb"><a href="{{ url_for('admin.categories') }}">Categories</a> / {{ category.name if category else 'New' }}</nav>
+  <div class="page-head"><div><h1>{{ 'Edit category' if category else 'Add category' }}</h1></div></div>
+
+  <form class="card form-card" method="post" novalidate style="max-width:560px">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div class="form-section">
+      <div class="field {{ 'has-error' if error }}" style="margin:0">
+        <label for="name">Name</label>
+        <input id="name" type="text" name="name" value="{{ name }}" maxlength="60" required autofocus placeholder="e.g. Home & Living">
+        {% if error %}<div class="error-text">{{ error }}</div>{% endif %}
+      </div>
+    </div>
+    <div class="form-actions">
+      <a class="btn btn-ghost" href="{{ url_for('admin.categories') }}">Cancel</a>
+      <button class="btn btn-primary" type="submit">{{ icon('check') }} {{ 'Save changes' if category else 'Create category' }}</button>
+    </div>
+  </form>
+{% endblock %}

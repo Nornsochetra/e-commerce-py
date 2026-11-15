@@ -1,0 +1,39 @@
+{% extends "admin/base.html" %}
+{% from "macros.html" import icon %}
+{% block admin_title %}Customers{% endblock %}
+{% block content %}
+  <div class="page-head">
+    <div><h1>Customers</h1><p>{{ total }} customer{{ '' if total == 1 else 's' }} with paid orders. Guests check out without accounts, so customers are grouped by email.</p></div>
+  </div>
+
+  <div class="card">
+    <form class="toolbar" method="get">
+      <input class="input" type="search" name="q" value="{{ q }}" placeholder="Name, email or phone…" aria-label="Search customers">
+      <button class="btn btn-outline btn-sm" type="submit">{{ icon('search') }} Search</button>
+      {% if q %}<a class="btn btn-ghost btn-sm" href="{{ url_for('admin.customers') }}">Clear</a>{% endif %}
+    </form>
+    <div class="table-wrap">
+      <table class="table">
+        <thead><tr><th>Customer</th><th>Phone</th><th class="right">Orders</th><th class="right">Total spent</th><th>Last order</th></tr></thead>
+        <tbody>
+          {% for c in customers %}
+          <tr>
+            <td>
+              <div class="prod">
+                <span class="avatar" style="width:36px;height:36px;font-size:.8rem">{{ c.name[:1] }}</span>
+                <div><strong>{{ c.name }}</strong><div class="small muted">{{ c.email }}</div></div>
+              </div>
+            </td>
+            <td class="nowrap">{{ c.phone }}</td>
+            <td class="right">{{ c.orders }}</td>
+            <td class="right nowrap"><strong>{{ c.spent|money }}</strong></td>
+            <td class="nowrap"><a href="{{ url_for('admin.order_detail', order_id=c.last_id) }}">{{ c.last|localtime('%d %b %Y') }}</a></td>
+          </tr>
+          {% else %}
+          <tr><td colspan="5" class="empty-note">{{ 'No customers match your search.' if q else 'No paid orders yet.' }}</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+{% endblock %}

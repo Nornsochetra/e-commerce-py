@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% from "macros.html" import icon %}
+{% block title %}Your cart · {{ shop_name }}{% endblock %}
+
+{% block content %}
+  <div class="page-head"><h1>Your cart</h1></div>
+
+  {% if lines %}
+  <div class="two-col">
+    <div class="card">
+      <div class="cart-head"><span></span><span>Product</span><span>Unit price</span><span>Quantity</span><span class="right">Subtotal</span><span></span></div>
+      {% for line in lines %}
+      <div class="cart-line">
+        <a href="{{ url_for('shop.product_detail', product_id=line.product.id) }}"><img src="{{ line.product.image_url() }}" alt=""></a>
+        <div>
+          <a class="name" href="{{ url_for('shop.product_detail', product_id=line.product.id) }}">{{ line.product.name }}</a>
+          {% if line.product.stock == 0 %}<div class="error-text">Sold out — please remove it.</div>
+          {% elif line.over_stock %}<div class="error-text">Only {{ line.product.stock }} left.</div>{% endif %}
+        </div>
+        <div class="unit muted">{{ line.product.price|money }}</div>
+        <form class="qty-cell" method="post" action="{{ url_for('shop.cart_update') }}" data-autosubmit>
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <input type="hidden" name="product_id" value="{{ line.product.id }}">
+          <div class="qty qty-sm" data-qty>
+            <button type="button" data-step="-1" aria-label="Decrease quantity">−</button>
+            <input type="number" name="quantity" value="{{ line.quantity }}" min="0" max="{{ line.product.stock }}" aria-label="Quantity of {{ line.product.name }}">
+            <button type="button" data-step="1" aria-label="Increase quantity">+</button>
+          </div>
+          <noscript><button class="btn btn-outline btn-sm" type="submit">Update</button></noscript>
+        </form>
+        <div class="line-total">{{ line.subtotal|money }}</div>
+        <form class="remove-cell" method="post" action="{{ url_for('shop.cart_remove') }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <input type="hidden" name="product_id" value="{{ line.product.id }}">
+          <button class="icon-btn" type="submit" aria-label="Remove {{ line.product.name }}" title="Remove">{{ icon('trash') }}</button>
+        </form>
+      </div>
+      {% endfor %}
+    </div>
+
+    <aside class="card card-body sticky">
+      <h2>Order summary</h2>
+      {% set ns = namespace(items=0, blocked=false) %}
+      {% for line in lines %}{% set ns.items = ns.items + line.quantity %}{% if line.over_stock %}{% set ns.blocked = true %}{% endif %}{% endfor %}
+      <div class="summary-row"><span class="muted">Items</span><span>{{ ns.items }}</span></div>
+      <div class="summary-row"><span class="muted">Subtotal</span><span>{{ total|money }}</span></div>
+      <div class="summary-row"><span class="muted">Delivery</span><span>Free</span></div>
+      <div class="summary-row summary-total"><span>Total</span><span>{{ total|money }}</span></div>
+      {% if ns.blocked %}
+        <div class="alert alert-danger" style="margin-top:14px">Some items exceed the available stock. Update your cart to continue.</div>
+        <button class="btn btn-primary btn-lg btn-block" disabled>Proceed to checkout</button>
+      {% else %}
+        <a class="btn btn-primary btn-lg btn-block" style="margin-top:16px" href="{{ url_for('shop.checkout') }}">Proceed to checkout</a>
+      {% endif %}
+      <a class="btn btn-ghost btn-block" style="margin-top:8px" href="{{ url_for('shop.shop') }}">Continue shopping</a>
+    </aside>
+  </div>
+  {% else %}
+  <div class="card empty">
+    <div class="icon">🛒</div>
+    <h2>Your cart is empty</h2>
+    <p class="muted">Browse the shop and add something you like.</p>
+    <a class="btn btn-primary" href="{{ url_for('shop.shop') }}">Start shopping</a>
+  </div>
+  {% endif %}
+{% endblock %}

@@ -1,0 +1,114 @@
+{% set ICONS = {
+  'home': '<path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/>',
+  'box': '<path d="M21 8 12 3 3 8v8l9 5 9-5zM3 8l9 5 9-5M12 13v8"/>',
+  'cart': '<path d="M3 4h2l2.4 11.2a2 2 0 0 0 2 1.6h7.7a2 2 0 0 0 2-1.5L21 8H6.2"/><circle cx="10" cy="20.5" r="1.2"/><circle cx="17" cy="20.5" r="1.2"/>',
+  'bag': '<path d="M5 8h14l-1.2 12.1a1 1 0 0 1-1 .9H7.2a1 1 0 0 1-1-.9zM9 8V6.5a3 3 0 0 1 6 0V8"/>',
+  'receipt': '<path d="M6 3h12v18l-3-2-3 2-3-2-3 2zM9 8h6M9 12h6M9 16h4"/>',
+  'users': '<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0M16 4.6a3.5 3.5 0 0 1 0 6.8M18 14.2a6.5 6.5 0 0 1 3.5 5.8"/>',
+  'grid': '<rect x="3.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.5"/>',
+  'logout': '<path d="M15 4h4a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1h-4M10 8l-4 4 4 4M6 12h11"/>',
+  'bell': '<path d="M6 16v-5a6 6 0 1 1 12 0v5l2 2H4zM10 20.5a2 2 0 0 0 4 0"/>',
+  'plus': '<path d="M12 5v14M5 12h14"/>',
+  'trend': '<path d="m3 17 6-6 4 4 8-8M15 7h6v6"/>',
+  'search': '<circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/>',
+  'chevron-down': '<path d="m6 9 6 6 6-6"/>',
+  'chevron-left': '<path d="m15 18-6-6 6-6"/>',
+  'chevron-right': '<path d="m9 18 6-6-6-6"/>',
+  'arrow-right': '<path d="M5 12h14M13 6l6 6-6 6"/>',
+  'arrow-up': '<path d="M12 19V5M6 11l6-6 6 6"/>',
+  'arrow-down': '<path d="M12 5v14M6 13l6 6 6-6"/>',
+  'truck': '<path d="M3 6h11v10H3zM14 9h4l3 3v4h-7"/><circle cx="7" cy="18" r="1.8"/><circle cx="17" cy="18" r="1.8"/>',
+  'shield': '<path d="M12 3 4 6v6c0 5 3.5 8 8 9 4.5-1 8-4 8-9V6z"/><path d="m9 12 2 2 4-4"/>',
+  'headset': '<path d="M4 14v-2a8 8 0 0 1 16 0v2M4 14h3v5H5a1 1 0 0 1-1-1zM20 14h-3v5h2a1 1 0 0 0 1-1z"/>',
+  'leaf': '<path d="M5 20c0-9.5 6-15 15-15 0 9-5.5 15-14.5 15M5 20l7.5-7.5"/>',
+  'qr': '<path d="M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM14 14h2.5v2.5H14zM17.5 17.5H20V20h-2.5zM14 20h1M20 14v1"/>',
+  'edit': '<path d="M4 20h4L19 9l-4-4L4 16zM14 6l4 4"/>',
+  'trash': '<path d="M4 7h16M10 11v6M14 11v6M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2l1-12M9 7V4h6v3"/>',
+  'eye': '<path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>',
+  'menu': '<path d="M4 6h16M4 12h16M4 18h16"/>',
+  'store': '<path d="m4 9 1.5-5h13L20 9M4 9v11h16V9M4 9h16M9 20v-6h6v6"/>',
+  'external': '<path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/>',
+  'pin': '<path d="M12 21s7-6.2 7-12a7 7 0 1 0-14 0c0 5.8 7 12 7 12z"/><circle cx="12" cy="9" r="2.5"/>',
+  'check': '<path d="m5 12.5 4.5 4.5L19 7.5"/>',
+  'alert': '<path d="M12 3 2 20h20zM12 10v4M12 17h.01"/>',
+} %}
+
+{% macro icon(name, cls='i') -%}
+<svg class="{{ cls }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">{{ ICONS.get(name, '')|safe }}</svg>
+{%- endmacro %}
+
+{% macro logo(name, href) -%}
+<a class="brand" href="{{ href }}">
+  <svg class="brand-mark" viewBox="0 0 40 40" aria-hidden="true">
+    <path d="M14 13v-2.5a6 6 0 0 1 12 0V13" fill="none" stroke="#17823c" stroke-width="3" stroke-linecap="round"/>
+    <path d="M6.5 13h27l-2.1 20.3a3 3 0 0 1-3 2.7H11.6a3 3 0 0 1-3-2.7z" fill="#17823c"/>
+    <path d="m14.5 24 4 4 7-7.5" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  </svg>{{ name }}
+</a>
+{%- endmacro %}
+
+{% macro price(product) -%}
+<span class="price">{{ product.price|money }}{% if product.on_sale %}<s>{{ product.compare_price|money }}</s>{% endif %}</span>
+{%- endmacro %}
+
+{% macro product_card(product) -%}
+<article class="product-card">
+  <a class="thumb" href="{{ url_for('shop.product_detail', product_id=product.id) }}">
+    <img src="{{ product.image_url() }}" alt="{{ product.name }}" loading="lazy" width="600" height="600">
+    {% if not product.in_stock %}<span class="pill pill-danger">Out of stock</span>
+    {% elif product.on_sale %}<span class="badge-sale">-{{ product.discount_percent }}%</span>{% endif %}
+  </a>
+  <div class="body">
+    {% if product.category %}<div class="cat">{{ product.category.name }}</div>{% endif %}
+    <h3><a href="{{ url_for('shop.product_detail', product_id=product.id) }}">{{ product.name }}</a></h3>
+    <p class="desc">{{ product.description }}</p>
+    <div class="foot">
+      <div>
+        {{ price(product) }}
+        <div><a class="details" href="{{ url_for('shop.product_detail', product_id=product.id) }}">View details</a></div>
+      </div>
+      <form method="post" action="{{ url_for('shop.cart_add') }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <input type="hidden" name="product_id" value="{{ product.id }}">
+        <input type="hidden" name="quantity" value="1">
+        <input type="hidden" name="next" value="{{ request.full_path }}">
+        <button class="cart-btn" type="submit" title="{{ 'Add to cart' if product.in_stock else 'Sold out' }}" aria-label="Add {{ product.name }} to cart" {% if not product.in_stock %}disabled{% endif %}>{{ icon('cart') }}</button>
+      </form>
+    </div>
+  </div>
+</article>
+{%- endmacro %}
+
+{% macro stock_pill(product) -%}
+  {% if product.stock == 0 %}<span class="pill pill-danger">Out of stock</span>
+  {% elif product.stock <= 5 %}<span class="pill pill-warning">Only {{ product.stock }} left</span>
+  {% else %}<span class="pill pill-success">In stock</span>{% endif %}
+{%- endmacro %}
+
+{% macro order_status(order) -%}
+  {% set styles = {'paid': 'pill-success', 'pending': 'pill-warning', 'cancelled': 'pill-muted', 'expired': 'pill-danger'} %}
+  {% set labels = {'paid': 'Paid', 'pending': 'Awaiting payment', 'cancelled': 'Cancelled', 'expired': 'Expired'} %}
+  <span class="pill {{ styles.get(order.status, 'pill-muted') }}">{{ labels.get(order.status, order.status|title) }}</span>
+{%- endmacro %}
+
+{% macro delta(change) -%}
+  {% if change is none %}<span class="delta flat">No earlier data</span>
+  {% elif change >= 0 %}<span class="delta up">{{ icon('arrow-up') }}+{{ '%.1f'|format(change) }}%<span class="vs">vs previous</span></span>
+  {% else %}<span class="delta down">{{ icon('arrow-down') }}{{ '%.1f'|format(change) }}%<span class="vs">vs previous</span></span>{% endif %}
+{%- endmacro %}
+
+{% macro pagination(page, endpoint) -%}
+  {% if page.pages > 1 %}
+  <nav class="pagination" aria-label="Pages">
+    {% for n in page.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=2) %}
+      {% if n is none %}<span>…</span>
+      {% elif n == page.page %}<span class="current" aria-current="page">{{ n }}</span>
+      {% else %}<a href="{{ url_for(endpoint, page=n, **kwargs) }}">{{ n }}</a>{% endif %}
+    {% endfor %}
+  </nav>
+  {% endif %}
+{%- endmacro %}
+
+{% macro field_error(errors, name) -%}
+  {% if errors.get(name) %}<div class="error-text">{{ errors[name] }}</div>{% endif %}
+{%- endmacro %}

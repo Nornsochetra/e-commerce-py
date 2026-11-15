@@ -1,0 +1,111 @@
+{% from "macros.html" import icon, logo %}<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}{{ shop_name }}{% endblock %}</title>
+  <meta name="description" content="{% block meta_description %}{{ shop_name }} — Cambodian products, delivered. Pay easily with KHQR.{% endblock %}">
+  {% block head_extra %}{% endblock %}
+  <link rel="icon" href="{{ url_for('static', filename='img/favicon.svg') }}" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body class="{% block body_class %}{% endblock %}">
+  {% block header %}
+  {% set ep = request.endpoint or '' %}
+  <header class="site-header">
+    <div class="container bar">
+      {{ logo(shop_name, url_for('shop.home')) }}
+      <nav class="main-nav" aria-label="Main">
+        <a href="{{ url_for('shop.home') }}" class="{{ 'active' if ep == 'shop.home' }}">Home</a>
+        <a href="{{ url_for('shop.shop') }}" class="{{ 'active' if ep == 'shop.shop' and not request.args.get('deals') and not request.args.get('category') }}">Shop</a>
+        {% if nav_categories %}
+        <div class="dropdown" data-dropdown>
+          <button type="button" aria-haspopup="true">Categories {{ icon('chevron-down') }}</button>
+          <div class="dropdown-menu">
+            {% for c in nav_categories %}<a href="{{ url_for('shop.shop', category=c.id) }}">{{ c.name }}</a>{% endfor %}
+          </div>
+        </div>
+        {% endif %}
+        <a href="{{ url_for('shop.shop', deals=1) }}" class="{{ 'active' if request.args.get('deals') }}">Deals</a>
+      </nav>
+      <form class="header-search" action="{{ url_for('shop.shop') }}" method="get" role="search">
+        <label class="sr-only" for="q">Search products</label>
+        <input id="q" type="search" name="q" placeholder="Search for products…" value="{{ request.args.get('q', '') }}">
+        <button type="submit" aria-label="Search">{{ icon('search') }}</button>
+      </form>
+      <div class="header-icons">
+        <a class="icon-link" href="{{ url_for('shop.cart_view') }}" aria-label="Cart, {{ cart_count }} items">
+          {{ icon('cart') }}{% if cart_count %}<span class="count">{{ cart_count }}</span>{% endif %}
+        </a>
+      </div>
+    </div>
+    <form class="mobile-search" action="{{ url_for('shop.shop') }}" method="get" role="search">
+      <input type="search" name="q" placeholder="Search for products…" value="{{ request.args.get('q', '') }}" aria-label="Search products">
+    </form>
+    <nav class="mobile-nav" aria-label="Main">
+      <a class="chip {{ 'active' if ep == 'shop.home' }}" href="{{ url_for('shop.home') }}">Home</a>
+      <a class="chip {{ 'active' if ep == 'shop.shop' and not request.args.get('deals') and not request.args.get('category') }}" href="{{ url_for('shop.shop') }}">Shop all</a>
+      <a class="chip {{ 'active' if request.args.get('deals') }}" href="{{ url_for('shop.shop', deals=1) }}">Deals</a>
+      {% for c in nav_categories %}<a class="chip {{ 'active' if request.args.get('category')|int == c.id }}" href="{{ url_for('shop.shop', category=c.id) }}">{{ c.name }}</a>{% endfor %}
+    </nav>
+  </header>
+  {% endblock %}
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    <div class="flash-stack" role="status" aria-live="polite">
+      {% for category, message in messages %}
+      <div class="flash flash-{{ category }}">{{ message }}<button type="button" aria-label="Dismiss" data-dismiss>&times;</button></div>
+      {% endfor %}
+    </div>
+    {% endif %}
+  {% endwith %}
+
+  {% block main %}
+  <main>
+    <div class="container">
+      {% block content %}{% endblock %}
+    </div>
+  </main>
+  {% endblock %}
+
+  {% block footer %}
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div>
+          {{ logo(shop_name, url_for('shop.home')) }}
+          <p style="margin-top:12px;max-width:300px">Products from Cambodian makers — pepper, honey, silk and more — delivered to your door.</p>
+          <span class="khqr-chip"><b>KHQR</b> Pay with any Cambodian banking app</span>
+        </div>
+        <div>
+          <h4>Shop</h4>
+          <a href="{{ url_for('shop.shop') }}">All products</a>
+          <a href="{{ url_for('shop.shop', deals=1) }}">Deals</a>
+          <a href="{{ url_for('shop.cart_view') }}">Cart</a>
+        </div>
+        <div>
+          <h4>Categories</h4>
+          {% for c in nav_categories[:5] %}<a href="{{ url_for('shop.shop', category=c.id) }}">{{ c.name }}</a>{% endfor %}
+        </div>
+        <div>
+          <h4>Help</h4>
+          <a href="{{ url_for('shop.shop') }}">How to order</a>
+          <a href="{{ url_for('shop.home') }}#features">Delivery &amp; payment</a>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <span>&copy; {{ shop_name }} · Phnom Penh, Cambodia</span>
+        <span>Secure payment with KHQR · Bakong</span>
+      </div>
+    </div>
+  </footer>
+  {% endblock %}
+
+  <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,40 @@
+# Python
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+
+# Tests and coverage
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Secrets: real settings live in .env (copy .env.example)
+.env
+.env.*
+!.env.example
+
+# Local data: SQLite database, backups, generated secret key
+instance/
+*.db
+*.sqlite3
+
+# Logs
+*.log
+
+# Editors and OS
+.vscode/
+.idea/
+.DS_Store
+
+# Personal screenshots and bank QR codes in the project root (contain account details)
+/*.jpg
+/*.jpeg
+/*.png
+/*.heic
+
+# Sample photos used only for testing uploads
+/image-testing/

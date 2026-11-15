@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% from "macros.html" import field_error %}
+{% block title %}Checkout · {{ shop_name }}{% endblock %}
+
+{% block content %}
+  <nav class="breadcrumb"><a href="{{ url_for('shop.cart_view') }}">Cart</a> / Checkout</nav>
+  <div class="page-head"><h1>Checkout</h1></div>
+
+  <div class="two-col">
+    <form class="card card-body" method="post" novalidate>
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <h2>Your details</h2>
+      <p class="muted small">No account needed. We'll use these details to deliver your order.</p>
+
+      <div class="field {{ 'has-error' if errors.customer_name }}">
+        <label for="customer_name">Full name</label>
+        <input id="customer_name" type="text" name="customer_name" value="{{ form.customer_name }}" autocomplete="name" required maxlength="120">
+        {{ field_error(errors, 'customer_name') }}
+      </div>
+      <div class="form-row">
+        <div class="field {{ 'has-error' if errors.email }}">
+          <label for="email">Email address</label>
+          <input id="email" type="email" name="email" value="{{ form.email }}" autocomplete="email" required maxlength="254">
+          {{ field_error(errors, 'email') }}
+        </div>
+        <div class="field {{ 'has-error' if errors.phone }}">
+          <label for="phone">Phone number</label>
+          <input id="phone" type="tel" name="phone" value="{{ form.phone }}" autocomplete="tel" placeholder="012 345 678" required maxlength="20">
+          {{ field_error(errors, 'phone') }}
+        </div>
+      </div>
+      <div class="field {{ 'has-error' if errors.shipping_address }}">
+        <label for="shipping_address">Shipping address</label>
+        <textarea id="shipping_address" name="shipping_address" autocomplete="street-address" required maxlength="500" placeholder="House no., street, sangkat, khan, city">{{ form.shipping_address }}</textarea>
+        {{ field_error(errors, 'shipping_address') }}
+      </div>
+
+      <div class="alert alert-info">
+        <strong>Payment: KHQR.</strong> On the next page you'll get a KHQR code to scan with ABA, ACLEDA, Wing, Bakong or any KHQR banking app.
+      </div>
+      <button class="btn btn-primary btn-lg btn-block" type="submit">Continue to KHQR payment · {{ total|money }}</button>
+    </form>
+
+    <aside class="card card-body sticky">
+      <h2>Order summary</h2>
+      {% for line in lines %}
+      <div class="mini-line">
+        <img src="{{ line.product.image_url() }}" alt="">
+        <div class="grow">
+          <div>{{ line.product.name }}</div>
+          <div class="muted small">{{ line.quantity }} × {{ line.product.price|money }}</div>
+        </div>
+        <strong>{{ line.subtotal|money }}</strong>
+      </div>
+      {% endfor %}
+      <div class="summary-row" style="margin-top:8px"><span class="muted">Delivery</span><span>Free</span></div>
+      <div class="summary-row summary-total"><span>Total</span><span>{{ total|money }}</span></div>
+      <a class="btn btn-ghost btn-sm" href="{{ url_for('shop.cart_view') }}">← Edit cart</a>
+    </aside>
+  </div>
+{% endblock %}

@@ -1,0 +1,39 @@
+{% extends "admin/base.html" %}
+{% from "macros.html" import icon %}
+{% block admin_title %}Categories{% endblock %}
+{% block content %}
+  <div class="page-head">
+    <div><h1>Categories</h1><p>Group products so customers can browse them in the shop.</p></div>
+    <a class="btn btn-primary" href="{{ url_for('admin.category_new') }}">{{ icon('plus') }} Add category</a>
+  </div>
+
+  <div class="card table-wrap">
+    <table class="table">
+      <thead><tr><th>ID</th><th>Name</th><th class="right">Products</th><th class="right">Actions</th></tr></thead>
+      <tbody>
+        {% for c in categories %}
+        <tr>
+          <td class="id">#{{ c.id }}</td>
+          <td><strong>{{ c.name }}</strong></td>
+          <td class="right"><a href="{{ url_for('admin.products', category=c.id) }}">{{ counts.get(c.id, 0) }}</a></td>
+          <td>
+            <div class="actions">
+              <a class="icon-btn" href="{{ url_for('shop.shop', category=c.id) }}" target="_blank" rel="noopener" title="View in shop" aria-label="View {{ c.name }} in shop">{{ icon('eye') }}</a>
+              <a class="icon-btn" href="{{ url_for('admin.category_edit', category_id=c.id) }}" title="Edit" aria-label="Edit {{ c.name }}">{{ icon('edit') }}</a>
+              <form method="post" action="{{ url_for('admin.category_delete', category_id=c.id) }}" data-confirm="Delete “{{ c.name }}”? Its products stay, without a category.">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button class="icon-btn danger" type="submit" title="Delete" aria-label="Delete {{ c.name }}">{{ icon('trash') }}</button>
+              </form>
+            </div>
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="4" class="empty-note">No categories yet.</td></tr>
+        {% endfor %}
+      </tbody>
+      {% if uncategorized %}
+      <tfoot><tr><td></td><td class="muted" style="font-weight:500">Uncategorized products</td><td class="right" style="font-weight:500">{{ uncategorized }}</td><td></td></tr></tfoot>
+      {% endif %}
+    </table>
+  </div>
+{% endblock %}

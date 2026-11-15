@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% from "macros.html" import logo %}
+{% block title %}Admin sign in · {{ shop_name }}{% endblock %}
+{% block head_extra %}<meta name="robots" content="noindex">{% endblock %}
+{% block header %}{% endblock %}
+{% block footer %}{% endblock %}
+{% block main %}
+<div class="login-page">
+  <form class="card login-card" method="post">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    {{ logo(shop_name, url_for('shop.home')) }}
+    <h1>Welcome back</h1>
+    <p class="muted">Sign in to manage products and orders.</p>
+    {% if error %}<div class="alert alert-danger">{{ error }}</div>{% endif %}
+    <div class="field">
+      <label for="username">Username</label>
+      <input id="username" type="text" name="username" value="{{ request.form.username }}" autocomplete="username" required autofocus>
+    </div>
+    <div class="field">
+      <label for="password">Password</label>
+      <input id="password" type="password" name="password" autocomplete="current-password" required>
+    </div>
+    <button class="btn btn-primary btn-lg btn-block" type="submit">Sign in</button>
+    <p class="small muted" style="text-align:center;margin:16px 0 0"><a href="{{ url_for('shop.home') }}">← Back to the shop</a></p>
+  </form>
+</div>
+{% endblock %}

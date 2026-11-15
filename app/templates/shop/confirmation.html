@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% from "macros.html" import order_status %}
+{% block title %}Order {{ order.number }} · {{ shop_name }}{% endblock %}
+
+{% block content %}
+  <div class="confirm">
+    {% if order.is_paid %}
+    <div class="confirm-head">
+      <div class="check-circle"><svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg></div>
+      <h1>Thank you, {{ order.customer_name.split()[0] }}!</h1>
+      <p class="muted">Your payment was received and your order is confirmed.</p>
+      <div>Order ID: <span class="order-id">{{ order.number }}</span></div>
+    </div>
+    {% else %}
+    <div class="confirm-head">
+      <h1>Order {{ order.number }}</h1>
+      {{ order_status(order) }}
+    </div>
+    {% endif %}
+
+    <div class="card card-body" style="margin-bottom:20px">
+      <h2>Customer details</h2>
+      <dl class="detail-grid">
+        <div><dt>Full name</dt><dd>{{ order.customer_name }}</dd></div>
+        <div><dt>Email</dt><dd>{{ order.email }}</dd></div>
+        <div><dt>Phone</dt><dd>{{ order.phone }}</dd></div>
+        <div><dt>Order date</dt><dd>{{ order.created_at|localtime }}</dd></div>
+        <div style="grid-column:1/-1"><dt>Shipping address</dt><dd>{{ order.shipping_address }}</dd></div>
+        {% if order.is_paid %}<div><dt>Payment</dt><dd>KHQR · paid {{ order.paid_at|localtime }}</dd></div>{% endif %}
+      </dl>
+    </div>
+
+    <div class="card">
+      <div class="table-wrap">
+        <table class="table">
+          <thead><tr><th>Item</th><th class="right">Unit price</th><th class="right">Qty</th><th class="right">Subtotal</th></tr></thead>
+          <tbody>
+            {% for item in order.items %}
+            <tr><td>{{ item.product_name }}</td><td class="right">{{ item.unit_price|money }}</td><td class="right">{{ item.quantity }}</td><td class="right">{{ item.subtotal|money }}</td></tr>
+            {% endfor %}
+          </tbody>
+          <tfoot><tr><td colspan="3">Total amount</td><td class="right">{{ order.total|money }}</td></tr></tfoot>
+        </table>
+      </div>
+    </div>
+
+    <p class="muted small" style="text-align:center;margin-top:18px">Keep your Order ID for reference. Bookmark this page to see your order again.</p>
+    <div style="text-align:center"><a class="btn btn-primary" href="{{ url_for('shop.home') }}">Continue shopping</a></div>
+  </div>
+{% endblock %}

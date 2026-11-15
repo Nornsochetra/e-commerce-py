@@ -1,0 +1,91 @@
+{% extends "admin/base.html" %}
+{% from "macros.html" import field_error, icon %}
+{% block admin_title %}{{ 'Edit ' ~ product.name if product else 'New product' }}{% endblock %}
+{% block content %}
+  <nav class="breadcrumb"><a href="{{ url_for('admin.products') }}">Products</a> / {{ 'Edit #' ~ product.id if product else 'New' }}</nav>
+  <div class="page-head">
+    <div><h1>{{ 'Edit product' if product else 'Add new product' }}</h1><p>{{ 'Changes appear in the shop right away.' if product else 'Fill in the details below.' }}</p></div>
+  </div>
+
+  <form class="card form-card" method="post" enctype="multipart/form-data" novalidate>
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    {% if errors %}
+    <div class="alert alert-danger" role="alert"><strong>Not saved.</strong> Fix the fields marked in red below{% if request.files.get('image') and request.files['image'].filename %}, then choose your image again (browsers clear the file after an error){% endif %}.</div>
+    {% endif %}
+
+    <div class="form-section">
+      <h3>Basic information</h3>
+      <div class="field {{ 'has-error' if errors.name }}">
+        <label for="name">Name</label>
+        <input id="name" type="text" name="name" value="{{ form.name or '' }}" maxlength="120" required>
+        {{ field_error(errors, 'name') }}
+      </div>
+      <div class="field">
+        <label for="description">Description</label>
+        <textarea id="description" name="description" rows="6">{{ form.description or '' }}</textarea>
+      </div>
+      <div class="field">
+        <label for="category_id">Category</label>
+        <select id="category_id" name="category_id">
+          <option value="">— No category —</option>
+          {% for c in categories %}<option value="{{ c.id }}" {{ 'selected' if form.category_id == c.id }}>{{ c.name }}</option>{% endfor %}
+        </select>
+        <div class="hint"><a href="{{ url_for('admin.category_new') }}">Add a category</a></div>
+      </div>
+    </div>
+
+    <div class="form-section">
+      <h3>Price &amp; stock</h3>
+      <div class="form-row-3">
+        <div class="field {{ 'has-error' if errors.price }}">
+          <label for="price">Price (USD)</label>
+          <div class="input-prefix"><span>$</span><input id="price" type="number" name="price" value="{{ form.price if form.price is not none else '' }}" min="0.01" step="0.01" required></div>
+          {{ field_error(errors, 'price') }}
+        </div>
+        <div class="field {{ 'has-error' if errors.compare_price }}">
+          <label for="compare_price">Original price <span class="muted">(optional)</span></label>
+          <div class="input-prefix"><span>$</span><input id="compare_price" type="number" name="compare_price" value="{{ form.compare_price if form.compare_price is not none else '' }}" min="0.01" step="0.01"></div>
+          <div class="hint">Higher than the price → shown as a discount.</div>
+          {{ field_error(errors, 'compare_price') }}
+        </div>
+        <div class="field {{ 'has-error' if errors.stock }}">
+          <label for="stock">Stock quantity</label>
+          <input id="stock" type="number" name="stock" value="{{ form.stock if form.stock is not none else '' }}" min="0" step="1" required>
+          {{ field_error(errors, 'stock') }}
+        </div>
+      </div>
+    </div>
+
+    <div class="form-section">
+      <h3>Image</h3>
+      <div class="field {{ 'has-error' if errors.image }}">
+        <div class="image-preview">
+          <img id="image-preview" src="{{ product.image_url() if product else url_for('static', filename='img/placeholder.svg') }}" alt="">
+          <div>
+            <input id="image" type="file" name="image" accept="image/png,image/jpeg,image/webp,image/gif,image/avif" data-preview="image-preview" data-max-bytes="{{ config.MAX_CONTENT_LENGTH - 100000 }}" aria-label="Product image">
+            <div class="hint">JPG, PNG, WEBP, GIF or AVIF, up to 5 MB. Square photos on a light background look best.</div>
+            <div class="error-text" data-file-error hidden></div>
+            {% if product and product.has_image %}
+            <label style="font-weight:500;margin-top:8px;display:flex;gap:6px;align-items:center"><input type="checkbox" name="remove_image" value="1"> Remove current image</label>
+            {% endif %}
+          </div>
+        </div>
+        {{ field_error(errors, 'image') }}
+      </div>
+    </div>
+
+    <div class="form-section">
+      <h3>Status</h3>
+      <div class="radio-group">
+        <label><input type="radio" name="status" value="active" {{ 'checked' if form.status == 'active' }}> Active <span class="muted small">— shown in the shop</span></label>
+        <label><input type="radio" name="status" value="inactive" {{ 'checked' if form.status == 'inactive' }}> Inactive <span class="muted small">— hidden</span></label>
+      </div>
+      {{ field_error(errors, 'status') }}
+    </div>
+
+    <div class="form-actions">
+      <a class="btn btn-ghost" href="{{ url_for('admin.products') }}">Cancel</a>
+      <button class="btn btn-primary" type="submit">{{ icon('check') }} {{ 'Save changes' if product else 'Create product' }}</button>
+    </div>
+  </form>
+{% endblock %}

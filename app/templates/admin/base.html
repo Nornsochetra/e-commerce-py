@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% from "macros.html" import icon, logo %}
+{% block title %}{% block admin_title %}Admin{% endblock %} · {{ shop_name }} Admin{% endblock %}
+{% block head_extra %}<meta name="robots" content="noindex">{% endblock %}
+{% block body_class %}admin-body{% endblock %}
+{% block header %}{% endblock %}
+{% block footer %}{% endblock %}
+
+{% block main %}
+{% set ep = request.endpoint or '' %}
+<div class="admin-shell" data-admin-shell>
+  <aside class="sidebar" aria-label="Admin navigation">
+    {{ logo(shop_name, url_for('admin.dashboard')) }}
+    <nav class="side-nav">
+      <a href="{{ url_for('admin.dashboard') }}" class="{{ 'active' if ep == 'admin.dashboard' }}">{{ icon('home') }} Dashboard</a>
+      <a href="{{ url_for('admin.products') }}" class="{{ 'active' if ep.startswith('admin.product') }}">{{ icon('box') }} Products</a>
+      <a href="{{ url_for('admin.orders') }}" class="{{ 'active' if ep.startswith('admin.order') }}">{{ icon('receipt') }} Orders{% if pending_orders %}<span class="count">{{ pending_orders }}</span>{% endif %}</a>
+      <a href="{{ url_for('admin.customers') }}" class="{{ 'active' if ep == 'admin.customers' }}">{{ icon('users') }} Customers</a>
+      <a href="{{ url_for('admin.categories') }}" class="{{ 'active' if ep.startswith('admin.categor') }}">{{ icon('grid') }} Categories</a>
+      <div class="side-label">Store</div>
+      <a href="{{ url_for('shop.home') }}" target="_blank" rel="noopener">{{ icon('store') }} View shop {{ icon('external') }}</a>
+    </nav>
+    <div class="side-foot">
+      <form method="post" action="{{ url_for('admin.logout') }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button type="submit">{{ icon('logout') }} Log out</button>
+      </form>
+    </div>
+  </aside>
+
+  <div class="admin-main">
+    <header class="topbar">
+      <button class="icon-btn menu-toggle" type="button" data-menu-toggle aria-label="Open menu">{{ icon('menu') }}</button>
+      <a class="icon-link bell" href="{{ url_for('admin.orders', status='pending') }}" aria-label="{{ pending_orders or 0 }} orders awaiting payment" title="Orders awaiting payment">
+        {{ icon('bell') }}{% if pending_orders %}<span class="dot">{{ pending_orders }}</span>{% endif %}
+      </a>
+      <div class="user-chip"><span class="avatar">{{ (session.admin_name or 'A')[:2] }}</span><span class="name">{{ session.admin_name }}</span></div>
+    </header>
+    <main class="admin-content">
+      {% block content %}{% endblock %}
+    </main>
+  </div>
+</div>
+{% endblock %}

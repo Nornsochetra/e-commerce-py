@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% from "macros.html" import icon, product_card, pagination %}
+{% block title %}{% if q %}Search: {{ q }}{% elif category %}{{ category.name }}{% elif deals %}Deals{% else %}Shop{% endif %} · {{ shop_name }}{% endblock %}
+
+{% block content %}
+  <nav class="breadcrumb"><a href="{{ url_for('shop.home') }}">Home</a> / {% if category %}<a href="{{ url_for('shop.shop') }}">Shop</a> / {{ category.name }}{% elif deals %}Deals{% else %}Shop{% endif %}</nav>
+  <div class="page-head">
+    <div>
+      <h1>{% if q %}Results for “{{ q }}”{% elif category %}{{ category.name }}{% elif deals %}Deals{% else %}All products{% endif %}</h1>
+      <p>{{ page.total }} product{{ '' if page.total == 1 else 's' }}{% if deals %} on sale{% endif %}</p>
+    </div>
+    {% if q %}<a class="btn btn-outline btn-sm" href="{{ url_for('shop.shop', category=category.id if category else None) }}">Clear search</a>{% endif %}
+  </div>
+
+  <div class="shop-toolbar">
+    <div class="chips">
+      <a class="chip {{ 'active' if not category and not deals }}" href="{{ url_for('shop.shop', q=q or None, sort=sort) }}">All</a>
+      <a class="chip {{ 'active' if deals }}" href="{{ url_for('shop.shop', q=q or None, sort=sort, deals=1) }}">Deals</a>
+      {% for c in categories %}
+      <a class="chip {{ 'active' if category and category.id == c.id }}" href="{{ url_for('shop.shop', q=q or None, sort=sort, category=c.id) }}">{{ c.name }}</a>
+      {% endfor %}
+    </div>
+    <form method="get">
+      {% for k, v in filters.items() if k != 'sort' %}<input type="hidden" name="{{ k }}" value="{{ v }}">{% endfor %}
+      <label class="sr-only" for="sort">Sort by</label>
+      <select class="sort-select" id="sort" name="sort" data-autosubmit-select>
+        {% for value, label in [('newest', 'Newest'), ('price_asc', 'Price: low to high'), ('price_desc', 'Price: high to low'), ('name', 'Name A–Z')] %}
+        <option value="{{ value }}" {{ 'selected' if sort == value }}>{{ label }}</option>
+        {% endfor %}
+      </select>
+      <noscript><button class="btn btn-outline btn-sm" type="submit">Sort</button></noscript>
+    </form>
+  </div>
+
+  {% if page.items %}
+  <div class="product-grid">
+    {% for product in page.items %}{{ product_card(product) }}{% endfor %}
+  </div>
+  {{ pagination(page, 'shop.shop', **filters) }}
+  {% else %}
+  <div class="card empty">
+    <div class="icon">🔍</div>
+    <h2>No products found</h2>
+    <p class="muted">Try another word or category.</p>
+    <a class="btn btn-primary" href="{{ url_for('shop.shop') }}">See all products</a>
+  </div>
+  {% endif %}
+{% endblock %}
